@@ -239,7 +239,10 @@ final class Gallery
         echo '<div class="epg-badges-wrap">';
 
         if ($show_sale && $this->product->is_on_sale()) {
-            echo '<span class="epg-badge epg-badge-sale">' . esc_html__('Sale!', EPG_TEXT_DOMAIN) . '</span>';
+            $discount = $this->get_discount_percentage();
+            if ($discount > 0) {
+                echo '<span class="epg-badge epg-badge-sale epg-badge-discount" data-default-discount="' . esc_attr((string) $discount) . '">' . esc_html(sprintf('%d%%', $discount)) . '</span>';
+            }
         }
 
         if ($show_stock && !$this->product->is_in_stock()) {
@@ -247,6 +250,36 @@ final class Gallery
         }
 
         echo '</div>';
+    }
+
+    private function get_discount_percentage(): int
+    {
+        if ($this->product instanceof WC_Product_Variable) {
+            $prices = $this->product->get_variation_prices(true);
+            $regular_prices = $prices['regular_price'] ?? [];
+            $sale_prices    = $prices['sale_price'] ?? [];
+            $max_discount   = 0;
+
+            foreach ($sale_prices as $variation_id => $sale_price) {
+                $regular_price = (float) ($regular_prices[$variation_id] ?? 0);
+                $sale_price    = (float) $sale_price;
+
+                if ($regular_price > 0 && $sale_price >= 0 && $sale_price < $regular_price) {
+                    $max_discount = max($max_discount, (int) round((($regular_price - $sale_price) / $regular_price) * 100));
+                }
+            }
+
+            return $max_discount;
+        }
+
+        $regular_price = (float) $this->product->get_regular_price();
+        $sale_price    = (float) $this->product->get_sale_price();
+
+        if ($regular_price <= 0 || $sale_price < 0 || $sale_price >= $regular_price) {
+            return 0;
+        }
+
+        return (int) round((($regular_price - $sale_price) / $regular_price) * 100);
     }
 
     private function prepare_client_config(): array

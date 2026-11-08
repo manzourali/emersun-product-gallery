@@ -111,7 +111,7 @@
         $wrapper.data('epg-initialized', true);
 
         // 3. WooCommerce Variation Events Binding
-        if (config.wc && config.wc.isVariable && config.wc.syncVariation) {
+        if (config.wc && config.wc.isVariable) {
             bindVariationEvents($wrapper, mainSwiper);
         }
     }
@@ -126,7 +126,20 @@
         }
 
         $form.on('found_variation', function (event, variation) {
-            if (!variation || !variation.image_id) {
+            var $badge = $wrapper.find('.epg-badge-discount').first();
+            if (variation && $badge.length) {
+                var regularPrice = parseFloat(variation.display_regular_price);
+                var salePrice = parseFloat(variation.display_price);
+
+                if (regularPrice > 0 && salePrice >= 0 && salePrice < regularPrice) {
+                    $badge.text(Math.round(((regularPrice - salePrice) / regularPrice) * 100) + '%').show();
+                } else {
+                    $badge.hide();
+                }
+            }
+
+            var config = $wrapper.data('epg-config') || {};
+            if (!config.wc || !config.wc.syncVariation || !variation || !variation.image_id) {
                 return;
             }
 
@@ -152,6 +165,16 @@
 
         $form.on('reset_data', function () {
             var config = $wrapper.data('epg-config') || {};
+            var $badge = $wrapper.find('.epg-badge-discount').first();
+            if ($badge.length) {
+                var defaultDiscount = parseInt($badge.attr('data-default-discount'), 10) || 0;
+                if (defaultDiscount > 0) {
+                    $badge.text(defaultDiscount + '%').show();
+                } else {
+                    $badge.hide();
+                }
+            }
+
             if (config.wc && config.wc.resetOnClear) {
                 if (mainSwiper.params.loop) {
                     mainSwiper.slideToLoop(0);
