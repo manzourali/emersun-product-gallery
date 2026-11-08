@@ -1,0 +1,257 @@
+/**
+ * Emersun Product Gallery Styles
+ */
+
+.epg-gallery-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 2em;
+    box-sizing: border-box;
+}
+
+.epg-gallery-wrapper *,
+.epg-gallery-wrapper *::before,
+.epg-gallery-wrapper *::after {
+    box-sizing: inherit;
+}
+
+/* -------------------------------------------------------------
+ * Layouts (Thumbs Bottom, Left, Right, Single)
+ * ---------------------------------------------------------- */
+.epg-layout-thumbs-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.epg-layout-thumbs-left {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 12px;
+}
+
+.epg-layout-thumbs-right {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+.epg-layout-thumbs-left .epg-main-slider-container,
+.epg-layout-thumbs-right .epg-main-slider-container {
+    flex: 1 1 80%;
+    min-width: 0;
+}
+
+.epg-layout-thumbs-left .epg-thumbs-slider-container,
+.epg-layout-thumbs-right .epg-thumbs-slider-container {
+    flex: 0 0 18%;
+    max-width: 120px;
+    height: 440px;
+    position: relative;
+}
+
+/* Fallback to column layout on smaller tablets and mobile devices */
+@media (max-width: 768px) {
+
+    .epg-layout-thumbs-left,
+    .epg-layout-thumbs-right {
+        flex-direction: column;
+    }
+
+    .epg-layout-thumbs-left .epg-thumbs-slider-container,
+    .epg-layout-thumbs-right .epg-thumbs-slider-container {
+        flex: 1 1 auto;
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* -------------------------------------------------------------
+ * Main Slider Box & Heights
+ * ---------------------------------------------------------- */
+.epg-main-slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.epg-main-swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.epg-main-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.epg-image-inner {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fixed Aspect Ratio strategy */
+.epg-strategy-fixed .epg-image-inner {
+    padding-top: var(--epg-ratio-padding, 100%);
+    height: 0;
+}
+
+.epg-strategy-fixed .epg-image-inner img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Object Fit rules */
+.epg-fit-contain img {
+    object-fit: contain;
+}
+
+.epg-fit-cover img {
+    object-fit: cover;
+}
+
+.epg-main-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* -------------------------------------------------------------
+ * Thumbs Slider Box
+ * ---------------------------------------------------------- */
+.epg-thumbs-slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.epg-thumbs-swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.epg-thumb-slide {
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.25s ease, border-color 0.25s ease;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.epg-thumb-slide:hover {
+    opacity: 0.85;
+}
+
+.epg-thumb-slide.swiper-slide-thumb-active {
+    opacity: 1;
+    border-color: #CE6949;
+}
+
+.epg-thumb-inner {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.epg-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* -------------------------------------------------------------
+ * Navigation Arrows & Pagination
+ * ---------------------------------------------------------- */
+.epg-main-slider-container .swiper-button-prev,
+.epg-main-slider-container .swiper-button-next {
+    color: #333;
+    background: rgba(255, 255, 255, 0.85);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.epg-main-slider-container .swiper-button-prev:after,
+.epg-main-slider-container .swiper-button-next:after {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.epg-main-slider-container .swiper-button-prev:hover,
+.epg-main-slider-container .swiper-button-next:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+.epg-pagination {
+    bottom: 8px !important;
+}
+
+/* -------------------------------------------------------------
+ * Badges (Sale / Out of stock)
+ * ---------------------------------------------------------- */
+.epg-badges-wrap {
+    position: absolute;
+    top: 12px;
+    inset-inline-start: 12px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    pointer-events: none;
+}
+
+.epg-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    border-radius: 3px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.epg-badge-sale {
+    background-color: #CE6949;
+}
+
+.epg-badge-out-of-stock {
+    background-color: #777;
+}
+
+.epg-main-swiper .swiper-slide {
+    transition: opacity 0.4s ease;
+}
+.epg-main-swiper .swiper-slide-active {
+    z-index: 2;
+}
+
+/* -------------------------------------------------------------
+ * RTL Support
+ * ---------------------------------------------------------- */
+body.rtl .epg-layout-thumbs-left {
+    flex-direction: row;
+}
+
+body.rtl .epg-layout-thumbs-right {
+    flex-direction: row-reverse;
+}
