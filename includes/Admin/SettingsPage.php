@@ -213,6 +213,7 @@ final class SettingsPage
     {
         $defaults = Helpers::default_settings();
         $input = is_array($input) ? $input : [];
+        $input = array_replace_recursive(Helpers::get_settings(), $input);
 
         $out = $defaults;
 
@@ -322,6 +323,7 @@ final class SettingsPage
                 $value = $this->get_value_by_path($settings, $path);
 
                 echo '<label>';
+                echo '<input type="hidden" name="' . esc_attr(Helpers::OPTION_KEY) . '[' . esc_attr($this->path_to_input_name($path)) . ']" value="0" />';
                 echo '<input type="checkbox" name="' . esc_attr(Helpers::OPTION_KEY) . '[' . esc_attr($this->path_to_input_name($path)) . ']" value="1" ' . checked((bool) $value, true, false) . ' />';
                 echo ' ' . esc_html__('Enabled', EPG_TEXT_DOMAIN);
                 echo '</label>';
