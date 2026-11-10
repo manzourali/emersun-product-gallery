@@ -18,7 +18,7 @@
      * Initializes a single gallery instance
      */
     function initGallery($wrapper) {
-        if ($wrapper.data('epg-initialized')) {
+        if ($wrapper.data('epg-initialized') || $wrapper.data('epg-initializing')) {
             return;
         }
 
@@ -30,13 +30,14 @@
             return;
         }
 
+        $wrapper.data('epg-initializing', true);
         var config = $wrapper.data('epg-config') || {};
         var isRTL = Boolean(window.epgData && window.epgData.is_rtl);
 
         var $mainContainer = $wrapper.find('.epg-main-swiper');
         var $thumbsContainer = $wrapper.find('.epg-thumbs-swiper');
 
-        var thumbsSwiper = null;
+        var thumbsSwiperPromise = Promise.resolve(null);
 
         // 1. Initialize Thumbnails Swiper if element exists
         if ($thumbsContainer.length) {
@@ -66,7 +67,9 @@
                 }
             };
 
-            thumbsSwiper = new SwiperConstructor($thumbsContainer[0], thumbsOptions);
+            thumbsSwiperPromise = Promise.resolve().then(function () {
+                return new SwiperConstructor($thumbsContainer[0], thumbsOptions);
+            });
         }
 
         // 2. Main Swiper Configuration
@@ -96,24 +99,29 @@
             };
         }
 
-        // Link thumbs instance if available
-        if (thumbsSwiper) {
-            mainOptions.thumbs = {
-                swiper: thumbsSwiper
-            };
-        }
+        // Elementor's Swiper utility resolves asynchronously. Wait for real
+        // instances before linking thumbnails or binding event handlers.
+        thumbsSwiperPromise.then(function (thumbsSwiper) {
+            if (thumbsSwiper) {
+                mainOptions.thumbs = { swiper: thumbsSwiper };
+            }
 
-        // Initialize Main Swiper
-        var mainSwiper = new SwiperConstructor($mainContainer[0], mainOptions);
+            return Promise.resolve(new SwiperConstructor($mainContainer[0], mainOptions)).then(function (mainSwiper) {
+                $wrapper.data('epg-main-swiper', mainSwiper);
+                $wrapper.data('epg-thumbs-swiper', thumbsSwiper);
+                $wrapper.data('epg-initialized', true);
 
-        $wrapper.data('epg-main-swiper', mainSwiper);
-        $wrapper.data('epg-thumbs-swiper', thumbsSwiper);
-        $wrapper.data('epg-initialized', true);
-
-        // 3. WooCommerce Variation Events Binding
-        if (config.wc && config.wc.isVariable) {
-            bindVariationEvents($wrapper, mainSwiper);
-        }
+                if (config.wc && config.wc.isVariable) {
+                    bindVariationEvents($wrapper, mainSwiper);
+                }
+            });
+        }).catch(function (error) {
+            if (window.epgData && window.epgData.debug) {
+                console.error('[EPG] Swiper initialization failed.', error);
+            }
+        }).then(function () {
+            $wrapper.removeData('epg-initializing');
+        });
     }
 
     /**
@@ -176,9 +184,9 @@
             }
 
             if (config.wc && config.wc.resetOnClear) {
-                if (mainSwiper.params.loop) {
+                if (mainSwiper && mainSwiper.params && mainSwiper.params.loop && typeof mainSwiper.slideToLoop === 'function') {
                     mainSwiper.slideToLoop(0);
-                } else {
+                } else if (mainSwiper && typeof mainSwiper.slideTo === 'function') {
                     mainSwiper.slideTo(0);
                 }
             }
@@ -206,14 +214,14 @@
  * considering loop mode duplicate slides
  */
     function navigateToSlide(mainSwiper, viewIndex) {
-        if (typeof viewIndex === 'undefined' || viewIndex < 0) {
+        if (!mainSwiper || typeof viewIndex === 'undefined' || viewIndex < 0) {
             return;
         }
 
         // In loop mode Swiper clones slides; use slideToLoop on the real view index
-        if (mainSwiper.params.loop) {
+        if (mainSwiper.params && mainSwiper.params.loop && typeof mainSwiper.slideToLoop === 'function') {
             mainSwiper.slideToLoop(viewIndex);
-        } else {
+        } else if (typeof mainSwiper.slideTo === 'function') {
             mainSwiper.slideTo(viewIndex);
         }
     }
